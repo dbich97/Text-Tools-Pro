@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import CharacterCounter from './components/CharacterCounter';
 import FontChanger from './components/FontChanger';
 import FancyTextGenerator from './components/FancyTextGenerator';
@@ -35,8 +35,87 @@ import WordsToPagesConverter from './components/WordsToPagesConverter';
 
 type Tool = 'counter' | 'font' | 'fancy' | 'invisible' | 'case' | 'compare' | 'find' | 'readability' | 'readingTime' | 'syllable' | 'repeater' | 'titlecase' | 'whitespace' | 'word' | 'colemanliau' | 'fleschkincaid' | 'fryreadability' | 'dalechall' | 'gunningfog' | 'smog' | 'binary' | 'morse' | 'ubbidubbi' | 'wingdings' | 'abjad' | 'alphabetizer' | 'ancient' | 'drunk' | 'gematria' | 'numberstowords' | 'wordstonumbers' | 'textsplitter' | 'wordstopages';
 
+const slugToTool: { [slug: string]: Tool } = {
+  'character-counter': 'counter',
+  'word-counter': 'word',
+  'font-changer': 'font',
+  'fancy-text-generator': 'fancy',
+  'drunk-text-generator': 'drunk',
+  'invisible-character': 'invisible',
+  'case-converter': 'case',
+  'title-case-converter': 'titlecase',
+  'compare-text': 'compare',
+  'find-and-replace': 'find',
+  'whitespace-remover': 'whitespace',
+  'text-repeater': 'repeater',
+  'text-splitter': 'textsplitter',
+  'alphabetizer': 'alphabetizer',
+  'binary-translator': 'binary',
+  'morse-code-translator': 'morse',
+  'ubbi-dubbi-translator': 'ubbidubbi',
+  'wingdings-translator': 'wingdings',
+  'ancient-text-generator': 'ancient',
+  'abjad-calculator': 'abjad',
+  'gematria-calculator': 'gematria',
+  'numbers-to-words-converter': 'numberstowords',
+  'words-to-numbers-converter': 'wordstonumbers',
+  'words-to-pages-converter': 'wordstopages',
+  'readability-checker': 'readability',
+  'flesch-kincaid-calculator': 'fleschkincaid',
+  'gunning-fog-index': 'gunningfog',
+  'coleman-liau-index': 'colemanliau',
+  'smog-readability': 'smog',
+  'dale-chall-readability': 'dalechall',
+  'fry-readability-calculator': 'fryreadability',
+  'reading-time-calculator': 'readingTime',
+  'syllable-counter': 'syllable',
+};
+
+// FIX: Corrected a TypeScript error where the inferred type from Object.fromEntries was too generic.
+// A type assertion is used to let TypeScript know the precise shape of the resulting object.
+const toolToSlug = Object.fromEntries(
+  Object.entries(slugToTool).map(([slug, tool]) => [tool, slug])
+) as Record<Tool, string>;
+
+
 const App: React.FC = () => {
   const [activeTool, setActiveTool] = useState<Tool>('counter');
+
+  useEffect(() => {
+    const handleLocationChange = () => {
+      const path = window.location.pathname;
+      const slug = path.split('/').pop() || '';
+      const tool = slugToTool[slug] || 'counter';
+      setActiveTool(tool);
+    };
+
+    handleLocationChange();
+    
+    window.addEventListener('popstate', handleLocationChange);
+
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    const path = window.location.pathname;
+    if (path === '/' || path === '/en' || path === '/en/') {
+      const newPath = `/en/${toolToSlug['counter']}`;
+      window.history.replaceState({}, '', newPath);
+      setActiveTool('counter');
+    }
+  }, [activeTool]);
+
+
+  const navigate = (tool: Tool) => {
+    const slug = toolToSlug[tool];
+    const newPath = `/en/${slug}`;
+    if (window.location.pathname !== newPath) {
+      window.history.pushState({ tool }, '', newPath);
+    }
+    setActiveTool(tool);
+  };
 
   const navButtonClasses = "px-4 py-2 text-sm font-semibold rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-900 focus:ring-purple-500";
   const activeClasses = "text-white bg-purple-600";
@@ -61,231 +140,231 @@ const App: React.FC = () => {
         
         <nav className="flex justify-center flex-wrap gap-4 mb-8">
           <button 
-            onClick={() => setActiveTool('counter')} 
+            onClick={() => navigate('counter')} 
             className={`${navButtonClasses} ${activeTool === 'counter' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'counter'}
           >
             Character Counter
           </button>
           <button 
-            onClick={() => setActiveTool('word')} 
+            onClick={() => navigate('word')} 
             className={`${navButtonClasses} ${activeTool === 'word' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'word'}
           >
             Word Counter
           </button>
           <button 
-            onClick={() => setActiveTool('font')} 
+            onClick={() => navigate('font')} 
             className={`${navButtonClasses} ${activeTool === 'font' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'font'}
           >
             Font Changer
           </button>
           <button 
-            onClick={() => setActiveTool('fancy')} 
+            onClick={() => navigate('fancy')} 
             className={`${navButtonClasses} ${activeTool === 'fancy' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'fancy'}
           >
             Fancy Text Generator
           </button>
            <button 
-            onClick={() => setActiveTool('drunk')} 
+            onClick={() => navigate('drunk')} 
             className={`${navButtonClasses} ${activeTool === 'drunk' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'drunk'}
           >
             Drunk Text Generator
           </button>
           <button 
-            onClick={() => setActiveTool('invisible')} 
+            onClick={() => navigate('invisible')} 
             className={`${navButtonClasses} ${activeTool === 'invisible' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'invisible'}
           >
             Invisible Character
           </button>
           <button 
-            onClick={() => setActiveTool('case')} 
+            onClick={() => navigate('case')} 
             className={`${navButtonClasses} ${activeTool === 'case' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'case'}
           >
             Case Converter
           </button>
            <button 
-            onClick={() => setActiveTool('titlecase')} 
+            onClick={() => navigate('titlecase')} 
             className={`${navButtonClasses} ${activeTool === 'titlecase' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'titlecase'}
           >
             Title Case Converter
           </button>
           <button 
-            onClick={() => setActiveTool('compare')} 
+            onClick={() => navigate('compare')} 
             className={`${navButtonClasses} ${activeTool === 'compare' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'compare'}
           >
             Compare Text
           </button>
            <button 
-            onClick={() => setActiveTool('find')} 
+            onClick={() => navigate('find')} 
             className={`${navButtonClasses} ${activeTool === 'find' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'find'}
           >
             Find and Replace
           </button>
            <button 
-            onClick={() => setActiveTool('whitespace')} 
+            onClick={() => navigate('whitespace')} 
             className={`${navButtonClasses} ${activeTool === 'whitespace' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'whitespace'}
           >
             Whitespace Remover
           </button>
           <button 
-            onClick={() => setActiveTool('repeater')} 
+            onClick={() => navigate('repeater')} 
             className={`${navButtonClasses} ${activeTool === 'repeater' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'repeater'}
           >
             Text Repeater
           </button>
            <button 
-            onClick={() => setActiveTool('textsplitter')} 
+            onClick={() => navigate('textsplitter')} 
             className={`${navButtonClasses} ${activeTool === 'textsplitter' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'textsplitter'}
           >
             Text Splitter
           </button>
            <button 
-            onClick={() => setActiveTool('alphabetizer')} 
+            onClick={() => navigate('alphabetizer')} 
             className={`${navButtonClasses} ${activeTool === 'alphabetizer' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'alphabetizer'}
           >
             Alphabetizer
           </button>
            <button 
-            onClick={() => setActiveTool('binary')} 
+            onClick={() => navigate('binary')} 
             className={`${navButtonClasses} ${activeTool === 'binary' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'binary'}
           >
             Binary Translator
           </button>
            <button 
-            onClick={() => setActiveTool('morse')} 
+            onClick={() => navigate('morse')} 
             className={`${navButtonClasses} ${activeTool === 'morse' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'morse'}
           >
             Morse Code Translator
           </button>
           <button 
-            onClick={() => setActiveTool('ubbidubbi')} 
+            onClick={() => navigate('ubbidubbi')} 
             className={`${navButtonClasses} ${activeTool === 'ubbidubbi' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'ubbidubbi'}
           >
             Ubbi Dubbi Translator
           </button>
            <button 
-            onClick={() => setActiveTool('wingdings')} 
+            onClick={() => navigate('wingdings')} 
             className={`${navButtonClasses} ${activeTool === 'wingdings' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'wingdings'}
           >
             Wingdings Translator
           </button>
            <button 
-            onClick={() => setActiveTool('ancient')} 
+            onClick={() => navigate('ancient')} 
             className={`${navButtonClasses} ${activeTool === 'ancient' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'ancient'}
           >
             Ancient Text Generator
           </button>
           <button 
-            onClick={() => setActiveTool('abjad')} 
+            onClick={() => navigate('abjad')} 
             className={`${navButtonClasses} ${activeTool === 'abjad' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'abjad'}
           >
             Abjad Calculator
           </button>
           <button 
-            onClick={() => setActiveTool('gematria')} 
+            onClick={() => navigate('gematria')} 
             className={`${navButtonClasses} ${activeTool === 'gematria' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'gematria'}
           >
             Gematria Calculator
           </button>
           <button 
-            onClick={() => setActiveTool('numberstowords')} 
+            onClick={() => navigate('numberstowords')} 
             className={`${navButtonClasses} ${activeTool === 'numberstowords' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'numberstowords'}
           >
             Numbers to Words
           </button>
           <button 
-            onClick={() => setActiveTool('wordstonumbers')} 
+            onClick={() => navigate('wordstonumbers')} 
             className={`${navButtonClasses} ${activeTool === 'wordstonumbers' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'wordstonumbers'}
           >
             Words to Numbers
           </button>
           <button 
-            onClick={() => setActiveTool('wordstopages')} 
+            onClick={() => navigate('wordstopages')} 
             className={`${navButtonClasses} ${activeTool === 'wordstopages' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'wordstopages'}
           >
             Words to Pages
           </button>
           <button 
-            onClick={() => setActiveTool('readability')} 
+            onClick={() => navigate('readability')} 
             className={`${navButtonClasses} ${activeTool === 'readability' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'readability'}
           >
             Readability Checker
           </button>
           <button 
-            onClick={() => setActiveTool('fleschkincaid')} 
+            onClick={() => navigate('fleschkincaid')} 
             className={`${navButtonClasses} ${activeTool === 'fleschkincaid' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'fleschkincaid'}
           >
             Flesch Kincaid Calculator
           </button>
           <button 
-            onClick={() => setActiveTool('gunningfog')} 
+            onClick={() => navigate('gunningfog')} 
             className={`${navButtonClasses} ${activeTool === 'gunningfog' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'gunningfog'}
           >
             Gunning Fog Index
           </button>
           <button 
-            onClick={() => setActiveTool('colemanliau')} 
+            onClick={() => navigate('colemanliau')} 
             className={`${navButtonClasses} ${activeTool === 'colemanliau' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'colemanliau'}
           >
             Coleman-Liau Index
           </button>
            <button 
-            onClick={() => setActiveTool('smog')} 
+            onClick={() => navigate('smog')} 
             className={`${navButtonClasses} ${activeTool === 'smog' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'smog'}
           >
             SMOG Readability
           </button>
            <button 
-            onClick={() => setActiveTool('dalechall')} 
+            onClick={() => navigate('dalechall')} 
             className={`${navButtonClasses} ${activeTool === 'dalechall' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'dalechall'}
           >
             Dale–Chall Readability
           </button>
           <button 
-            onClick={() => setActiveTool('fryreadability')} 
+            onClick={() => navigate('fryreadability')} 
             className={`${navButtonClasses} ${activeTool === 'fryreadability' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'fryreadability'}
           >
             Fry Readability Calculator
           </button>
           <button 
-            onClick={() => setActiveTool('readingTime')} 
+            onClick={() => navigate('readingTime')} 
             className={`${navButtonClasses} ${activeTool === 'readingTime' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'readingTime'}
           >
             Reading Time Calculator
           </button>
           <button 
-            onClick={() => setActiveTool('syllable')} 
+            onClick={() => navigate('syllable')} 
             className={`${navButtonClasses} ${activeTool === 'syllable' ? activeClasses : inactiveClasses}`}
             aria-pressed={activeTool === 'syllable'}
           >
